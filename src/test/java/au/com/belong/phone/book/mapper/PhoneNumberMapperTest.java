@@ -36,7 +36,7 @@ class PhoneNumberMapperTest {
     @Test
     void shouldMapCorrectPhoneNumber() {
         phoneNumberDTO = mapper.toPhoneNumberDTO(phoneNumber);
-        assertEquals(phoneNumber.getPhoneNumber(), phoneNumberDTO.phoneNumber());
+        assertEquals(phoneNumber.getContactNumber(), phoneNumberDTO.contactNumber());
     }
 
     @Test

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record PhoneNumberWithCustomerDTO(Long id,
-                                         String phoneNumber,
+                                         String contactNumber,
                                          Boolean isActivated,
                                          @JsonProperty("customer") CustomerDTO customerDTO) {
 }

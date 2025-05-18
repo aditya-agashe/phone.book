@@ -59,7 +59,7 @@ class PhoneNumberControllerTest {
             [
               {
                 "id": 1,
-                "phoneNumber": "+61400123456",
+                "contactNumber": "+61400123456",
                 "isActivated": true,
                 "customer": {
                   "id": 1,
@@ -121,7 +121,7 @@ class PhoneNumberControllerTest {
             [
               {
                 "id": 1,
-                "phoneNumber": "+61400123456",
+                "contactNumber": "+61400123456",
                 "isActivated": true
               }
             ]
@@ -165,7 +165,7 @@ class PhoneNumberControllerTest {
         final String expectedJson = """
               {
                 "id": 1,
-                "phoneNumber": "+61400123456",
+                "contactNumber": "+61400123456",
                 "isActivated": true
               }
             """;

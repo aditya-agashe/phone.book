@@ -27,7 +27,7 @@ public class PhoneNumber {
     private Long id;
 
     @Column(name = "contact_number")
-    private String phoneNumber;
+    private String contactNumber;
 
     @Column(name = "is_activated")
     private Boolean isActivated;
