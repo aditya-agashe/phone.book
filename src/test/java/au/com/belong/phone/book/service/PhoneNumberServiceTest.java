@@ -144,7 +144,6 @@ class PhoneNumberServiceTest {
             .thenReturn(Optional.of(phoneNumber));
 
         // Create updated phone number
-        // PhoneNumber updatedPhoneNumber = new PhoneNumber(1L, "+61400123456", true, customer);
         when(phoneNumberRepository.save(phoneNumber)).thenReturn(phoneNumber);
         phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", false);
         when(mapper.toPhoneNumberDTO(phoneNumber)).thenReturn(phoneNumberDTO);

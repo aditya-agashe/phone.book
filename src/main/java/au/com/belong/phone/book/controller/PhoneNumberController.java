@@ -1,7 +1,6 @@
 package au.com.belong.phone.book.controller;
 
 import au.com.belong.phone.book.exception.handler.ErrorResponse;
-import au.com.belong.phone.book.exception.handler.ResourceNotFoundException;
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
 import au.com.belong.phone.book.model.dto.PhoneNumberWithCustomerDTO;
 import au.com.belong.phone.book.service.PhoneNumberService;
