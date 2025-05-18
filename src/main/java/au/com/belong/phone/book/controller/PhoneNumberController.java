@@ -3,8 +3,11 @@ package au.com.belong.phone.book.controller;
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
 import au.com.belong.phone.book.service.PhoneNumberService;
 import java.util.List;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,4 +31,11 @@ public class PhoneNumberController {
         return phoneNumberService.getPhoneNumbersByCustomer(customerId);
     }
 
+    @PatchMapping("/customers/{customerId}/phone-numbers/{phoneNumberId}")
+    public ResponseEntity<PhoneNumberDTO> patchPhoneNumber(
+        @PathVariable Long customerId, @PathVariable Long phoneNumberId,
+        @RequestBody PhoneNumberDTO phoneNumberDTO) {
+        final PhoneNumberDTO updated = phoneNumberService.patchPhoneNumber(customerId, phoneNumberId, phoneNumberDTO);
+        return ResponseEntity.ok(updated);
+    }
 }

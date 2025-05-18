@@ -4,6 +4,7 @@ import au.com.belong.phone.book.exception.handler.ResourceNotFoundException;
 import au.com.belong.phone.book.mapper.PhoneNumberMapper;
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
 import au.com.belong.phone.book.model.entity.Customer;
+import au.com.belong.phone.book.model.entity.PhoneNumber;
 import au.com.belong.phone.book.repository.CustomerRepository;
 import au.com.belong.phone.book.repository.PhoneNumberRepository;
 import java.util.List;
@@ -48,4 +49,20 @@ public class PhoneNumberService {
             .map(phoneNumberMapper::phoneNumberToDTO)
             .toList();
     }
+
+    public PhoneNumberDTO patchPhoneNumber(Long customerId, Long phoneNumberId, PhoneNumberDTO phoneNumberDTO) {
+        final PhoneNumber phoneNumber = phoneNumberRepository.findByIdAndCustomerId(customerId, phoneNumberId)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                String.format("Phone Number not found with Customer ID: %d and Phone Number ID: %d",
+                    customerId, phoneNumberId)
+            ));
+
+        if (phoneNumberDTO.isActivated() != null) {
+            phoneNumber.setIsActivated(phoneNumberDTO.isActivated());
+        }
+
+        final PhoneNumber updated = phoneNumberRepository.save(phoneNumber);
+        return phoneNumberMapper.phoneNumberToDTO(updated);
+    }
+
 }

@@ -1,8 +1,10 @@
 package au.com.belong.phone.book.controller;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,6 +12,7 @@ import au.com.belong.phone.book.exception.handler.ResourceNotFoundException;
 import au.com.belong.phone.book.model.dto.CustomerDTO;
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
 import au.com.belong.phone.book.service.PhoneNumberService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -28,6 +31,9 @@ class PhoneNumberControllerTest {
 
     @MockBean
     private PhoneNumberService phoneNumberService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void shouldReturnEmptyArrayIfPhoneNumbersIsEmpty() throws Exception {
@@ -72,7 +78,7 @@ class PhoneNumberControllerTest {
     }
 
     @Test
-    void shouldInternalServerErrorIfPhoneNumbersThrowsTheSame() throws Exception {
+    void shouldReturnInternalServerErrorIfPhoneNumbersThrowsTheSame() throws Exception {
         final String expectedJson = """
             {
               "message": "Error occurred while fetching phone numbers."
@@ -135,7 +141,7 @@ class PhoneNumberControllerTest {
     }
 
     @Test
-    void shouldNotFoundErrorIfCustomerPhoneNumbersThrowsTheSame() throws Exception {
+    void shouldReturnNotFoundErrorIfCustomerPhoneNumbersThrowsTheSame() throws Exception {
         final String expectedJson = """
             {
               "message": "No customer found for ID: 1"
@@ -153,6 +159,87 @@ class PhoneNumberControllerTest {
             .getContentAsString();
         JSONAssert.assertEquals(expectedJson, actualJson, true);
         verify(phoneNumberService).getPhoneNumbersByCustomer(1L);
+    }
+
+    @Test
+    void shouldReturnUpdatedCustomerPhoneNumber() throws Exception {
+        final PhoneNumberDTO phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", true, new CustomerDTO(1L, "Customer 1"));
+        when(phoneNumberService.patchPhoneNumber(1L, 1L, phoneNumberDTO)).thenReturn(phoneNumberDTO);
+        final String expectedJson = """
+              {
+                "id": 1,
+                "phoneNumber": "+61400123456",
+                "isActivated": true,
+                "customer": {
+                  "id": 1,
+                  "customerName": "Customer 1"
+                }
+              }
+            """;
+
+        final String actualJson = mockMvc.perform(patch("/api/v1/customers/1/phone-numbers/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(phoneNumberDTO)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        JSONAssert.assertEquals(expectedJson, actualJson, true);
+        verify(phoneNumberService).patchPhoneNumber(1L, 1L, phoneNumberDTO);
+    }
+
+    @Test
+    void shouldReturnNotFoundErrorIfCustomerPhoneNumberCannotBeIdentified() throws Exception {
+        final String expectedJson = """
+            {
+              "message": "Phone Number not found with Customer ID: 1 and Phone Number ID: 2"
+            }
+        """;
+        final String errorMessage = "Phone Number not found with Customer ID: 1 and Phone Number ID: 2";
+        final PhoneNumberDTO phoneNumberDTO = new PhoneNumberDTO(1L, "", true, new CustomerDTO(2L, ""));
+        when(phoneNumberService.patchPhoneNumber(1L, 2L, phoneNumberDTO))
+            .thenThrow(new ResourceNotFoundException(errorMessage));
+
+        final String actualJson = mockMvc.perform(patch("/api/v1/customers/1/phone-numbers/2")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(phoneNumberDTO)))
+            .andExpect(status().isNotFound())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        JSONAssert.assertEquals(expectedJson, actualJson, true);
+        verify(phoneNumberService).patchPhoneNumber(1L, 2L, phoneNumberDTO);
+    }
+
+    @Test
+    void shouldReturnBadRequestErrorIfThePassedJsonIsMalformed() throws Exception {
+        final String content = """
+              {
+                "id": 1,
+                "phoneNumber": "+61400123456",
+                "isActivated": "ABCD",
+                "customer": {
+                  "id": 1,
+                  "customerName": "Customer 1"
+                }
+              }
+            """;
+        final String expectedJson = """
+            {
+              "message":
+              "JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from String \\"ABCD\\": only \\"true\\" or \\"false\\" recognized"
+            }
+        """;
+
+        final String actualJson = mockMvc.perform(patch("/api/v1/customers/1/phone-numbers/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        JSONAssert.assertEquals(expectedJson, actualJson, true);
+        verifyNoInteractions(phoneNumberService);
     }
 
 }

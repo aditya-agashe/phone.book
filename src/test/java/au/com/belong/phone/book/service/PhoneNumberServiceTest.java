@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import au.com.belong.phone.book.exception.handler.ResourceNotFoundException;
@@ -86,6 +87,75 @@ class PhoneNumberServiceTest {
         assertEquals("No customer found for ID: 999", ex.getMessage());
         verify(customerRepository).findById(999L);
         verifyNoInteractions(phoneNumberRepository);
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionIfCorrectPhoneNumberCannotBeIdentified() {
+        final Long customerId = 1L;
+        final Long phoneNumberId = 2L;
+        when(phoneNumberRepository.findByIdAndCustomerId(customerId, phoneNumberId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
+            service.patchPhoneNumber(customerId, phoneNumberId, phoneNumberDTO));
+
+        assertEquals("Phone Number not found with Customer ID: 1 and Phone Number ID: 2", ex.getMessage());
+
+        verify(phoneNumberRepository).findByIdAndCustomerId(customerId, phoneNumberId);
+        verifyNoMoreInteractions(phoneNumberRepository);
+        verifyNoInteractions(mapper);
+    }
+
+    @Test
+    void shouldUpdateIsActivatedIfCorrectPhoneNumberIsIdentifiedAndIsActivatedFlagHasBeenSet() {
+        final Long customerId = 1L;
+        final Long phoneNumberId = 2L;
+
+        // Set Phone Number as not activated
+        phoneNumber = new PhoneNumber(1L, "+61400123456", false, customer);
+        when(phoneNumberRepository.findByIdAndCustomerId(customerId, phoneNumberId))
+            .thenReturn(Optional.of(phoneNumber));
+
+        // Create updated phone number
+        PhoneNumber updatedPhoneNumber = new PhoneNumber(1L, "+61400123456", true, customer);
+        when(phoneNumberRepository.save(phoneNumber)).thenReturn(updatedPhoneNumber);
+        when(mapper.phoneNumberToDTO(updatedPhoneNumber)).thenReturn(phoneNumberDTO);
+
+        PhoneNumberDTO updatedPhoneNumberDTO = service.patchPhoneNumber(customerId, phoneNumberId, phoneNumberDTO);
+
+        // Ensure that the Phone Number is activated
+        assertEquals(true, updatedPhoneNumberDTO.isActivated());
+
+        verify(phoneNumberRepository).findByIdAndCustomerId(customerId, phoneNumberId);
+        verify(phoneNumberRepository).save(phoneNumber);
+        verify(mapper).phoneNumberToDTO(updatedPhoneNumber);
+    }
+
+    @Test
+    void shouldNotUpdateIsActivatedIfCorrectPhoneNumberIsIdentifiedAndIsActivatedFlagHasNotBeenSet() {
+        final Long customerId = 1L;
+        final Long phoneNumberId = 2L;
+
+        // Set Phone Number as not activated
+        phoneNumber = new PhoneNumber(1L, "+61400123456", false, customer);
+        when(phoneNumberRepository.findByIdAndCustomerId(customerId, phoneNumberId))
+            .thenReturn(Optional.of(phoneNumber));
+
+        // Create updated phone number
+        // PhoneNumber updatedPhoneNumber = new PhoneNumber(1L, "+61400123456", true, customer);
+        when(phoneNumberRepository.save(phoneNumber)).thenReturn(phoneNumber);
+        phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", false, null);
+        when(mapper.phoneNumberToDTO(phoneNumber)).thenReturn(phoneNumberDTO);
+
+        // Simulate that the flag is not set from incoming request
+        PhoneNumberDTO passedPhoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", null, null);
+        PhoneNumberDTO updatedPhoneNumberDTO = service.patchPhoneNumber(customerId, phoneNumberId, passedPhoneNumberDTO);
+
+        // Ensure that the Phone Number is activated
+        assertEquals(false, updatedPhoneNumberDTO.isActivated());
+
+        verify(phoneNumberRepository).findByIdAndCustomerId(customerId, phoneNumberId);
+        verify(phoneNumberRepository).save(phoneNumber);
+        verify(mapper).phoneNumberToDTO(phoneNumber);
     }
 
 }
