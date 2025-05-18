@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
+import au.com.belong.phone.book.model.dto.PhoneNumberWithCustomerDTO;
 import au.com.belong.phone.book.model.entity.Customer;
 import au.com.belong.phone.book.model.entity.PhoneNumber;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,7 @@ class PhoneNumberMapperTest {
     private PhoneNumber phoneNumber;
 
     private PhoneNumberDTO phoneNumberDTO;
+    private PhoneNumberWithCustomerDTO phoneNumberWithCustomerDTO;
 
     @BeforeEach
     void setUp() {
@@ -27,38 +29,38 @@ class PhoneNumberMapperTest {
 
     @Test
     void shouldReturnNonNullPhoneNumberDTO() {
-        phoneNumberDTO = mapper.phoneNumberToDTO(phoneNumber);
+        phoneNumberDTO = mapper.toPhoneNumberDTO(phoneNumber);
         assertNotNull(phoneNumberDTO);
     }
 
     @Test
-    void shouldReturnNonNullCustomerDTO() {
-        phoneNumberDTO = mapper.phoneNumberToDTO(phoneNumber);
-        assertNotNull(phoneNumberDTO.customerDTO());
-    }
-
-    @Test
     void shouldMapCorrectPhoneNumber() {
-        phoneNumberDTO = mapper.phoneNumberToDTO(phoneNumber);
+        phoneNumberDTO = mapper.toPhoneNumberDTO(phoneNumber);
         assertEquals(phoneNumber.getPhoneNumber(), phoneNumberDTO.phoneNumber());
     }
 
     @Test
     void shouldMapCorrectIsActivated() {
-        phoneNumberDTO = mapper.phoneNumberToDTO(phoneNumber);
+        phoneNumberDTO = mapper.toPhoneNumberDTO(phoneNumber);
         assertEquals(phoneNumber.getIsActivated(), phoneNumberDTO.isActivated());
     }
 
     @Test
     void shouldReturnNullPhoneNumberDTOIfPhoneNumberIsNull() {
-        phoneNumberDTO = mapper.phoneNumberToDTO(null);
+        phoneNumberDTO = mapper.toPhoneNumberDTO(null);
         assertNull(phoneNumberDTO);
     }
 
     @Test
+    void shouldReturnNonNullCustomerDTO() {
+        phoneNumberWithCustomerDTO = mapper.toPhoneNumberWithCustomerDTO(phoneNumber);
+        assertNotNull(phoneNumberWithCustomerDTO.customerDTO());
+    }
+
+    @Test
     void shouldReturnNullCustomerDTOIfCustomerIsNull() {
-        phoneNumberDTO = mapper.phoneNumberToDTO(new PhoneNumber(1L, "+61400123456", true, null));
-        assertNull(phoneNumberDTO.customerDTO());
+        phoneNumberWithCustomerDTO = mapper.toPhoneNumberWithCustomerDTO(new PhoneNumber(1L, "+61400123456", true, null));
+        assertNull(phoneNumberWithCustomerDTO.customerDTO());
     }
 
 

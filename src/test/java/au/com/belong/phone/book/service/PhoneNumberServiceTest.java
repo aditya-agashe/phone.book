@@ -11,6 +11,7 @@ import au.com.belong.phone.book.exception.handler.ResourceNotFoundException;
 import au.com.belong.phone.book.mapper.PhoneNumberMapper;
 import au.com.belong.phone.book.model.dto.CustomerDTO;
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
+import au.com.belong.phone.book.model.dto.PhoneNumberWithCustomerDTO;
 import au.com.belong.phone.book.model.entity.Customer;
 import au.com.belong.phone.book.model.entity.PhoneNumber;
 import au.com.belong.phone.book.repository.CustomerRepository;
@@ -41,6 +42,7 @@ class PhoneNumberServiceTest {
 
     private PhoneNumber phoneNumber;
     private PhoneNumberDTO phoneNumberDTO;
+    private PhoneNumberWithCustomerDTO phoneNumberWithCustomerDTO;
 
 
     @BeforeEach
@@ -50,23 +52,24 @@ class PhoneNumberServiceTest {
         phoneNumber = new PhoneNumber(1L, "+61400123456", true, customer);
 
         final CustomerDTO customerDTO = new CustomerDTO(1L, "Customer 1");
-        phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", true, customerDTO);
+        phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", true);
+        phoneNumberWithCustomerDTO = new PhoneNumberWithCustomerDTO(1L, "+61400123456", true, customerDTO);
     }
 
     @Test
     void shouldReturnAllPhoneNumbers() {
         when(phoneNumberRepository.findAll()).thenReturn(List.of(phoneNumber));
-        when(mapper.phoneNumberToDTO(phoneNumber)).thenReturn(phoneNumberDTO);
+        when(mapper.toPhoneNumberWithCustomerDTO(phoneNumber)).thenReturn(phoneNumberWithCustomerDTO);
         assertEquals(1, service.getAllPhoneNumbers().size());
         verify(phoneNumberRepository).findAll();
-        verify(mapper).phoneNumberToDTO(phoneNumber);
+        verify(mapper).toPhoneNumberWithCustomerDTO(phoneNumber);
     }
 
     @Test
-    void shouldReturnPhoneNumbersWhenCustomerExists() {
+    void shouldReturnPhoneNumbersForTheCustomer() {
         when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(phoneNumberRepository.findByCustomerId(1L)).thenReturn(List.of(phoneNumber));
-        when(mapper.phoneNumberToDTO(phoneNumber)).thenReturn(phoneNumberDTO);
+        when(mapper.toPhoneNumberDTO(phoneNumber)).thenReturn(phoneNumberDTO);
 
         List<PhoneNumberDTO> result = service.getPhoneNumbersByCustomer(1L);
 
@@ -77,7 +80,7 @@ class PhoneNumberServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenCustomerNotFound() {
+    void shouldThrowResourceNotFoundExceptionWhenCustomerNotFound() {
         when(customerRepository.findById(999L)).thenReturn(Optional.empty());
 
         ResourceNotFoundException ex = assertThrows(
@@ -118,7 +121,7 @@ class PhoneNumberServiceTest {
         // Create updated phone number
         PhoneNumber updatedPhoneNumber = new PhoneNumber(1L, "+61400123456", true, customer);
         when(phoneNumberRepository.save(phoneNumber)).thenReturn(updatedPhoneNumber);
-        when(mapper.phoneNumberToDTO(updatedPhoneNumber)).thenReturn(phoneNumberDTO);
+        when(mapper.toPhoneNumberDTO(updatedPhoneNumber)).thenReturn(phoneNumberDTO);
 
         PhoneNumberDTO updatedPhoneNumberDTO = service.patchPhoneNumber(customerId, phoneNumberId, phoneNumberDTO);
 
@@ -127,7 +130,7 @@ class PhoneNumberServiceTest {
 
         verify(phoneNumberRepository).findByIdAndCustomerId(customerId, phoneNumberId);
         verify(phoneNumberRepository).save(phoneNumber);
-        verify(mapper).phoneNumberToDTO(updatedPhoneNumber);
+        verify(mapper).toPhoneNumberDTO(updatedPhoneNumber);
     }
 
     @Test
@@ -143,11 +146,11 @@ class PhoneNumberServiceTest {
         // Create updated phone number
         // PhoneNumber updatedPhoneNumber = new PhoneNumber(1L, "+61400123456", true, customer);
         when(phoneNumberRepository.save(phoneNumber)).thenReturn(phoneNumber);
-        phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", false, null);
-        when(mapper.phoneNumberToDTO(phoneNumber)).thenReturn(phoneNumberDTO);
+        phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", false);
+        when(mapper.toPhoneNumberDTO(phoneNumber)).thenReturn(phoneNumberDTO);
 
         // Simulate that the flag is not set from incoming request
-        PhoneNumberDTO passedPhoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", null, null);
+        PhoneNumberDTO passedPhoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", null);
         PhoneNumberDTO updatedPhoneNumberDTO = service.patchPhoneNumber(customerId, phoneNumberId, passedPhoneNumberDTO);
 
         // Ensure that the Phone Number is activated
@@ -155,7 +158,7 @@ class PhoneNumberServiceTest {
 
         verify(phoneNumberRepository).findByIdAndCustomerId(customerId, phoneNumberId);
         verify(phoneNumberRepository).save(phoneNumber);
-        verify(mapper).phoneNumberToDTO(phoneNumber);
+        verify(mapper).toPhoneNumberDTO(phoneNumber);
     }
 
 }

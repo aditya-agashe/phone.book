@@ -3,6 +3,7 @@ package au.com.belong.phone.book.service;
 import au.com.belong.phone.book.exception.handler.ResourceNotFoundException;
 import au.com.belong.phone.book.mapper.PhoneNumberMapper;
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
+import au.com.belong.phone.book.model.dto.PhoneNumberWithCustomerDTO;
 import au.com.belong.phone.book.model.entity.Customer;
 import au.com.belong.phone.book.model.entity.PhoneNumber;
 import au.com.belong.phone.book.repository.CustomerRepository;
@@ -28,11 +29,11 @@ public class PhoneNumberService {
         this.phoneNumberMapper = phoneNumberMapper;
     }
 
-    public List<PhoneNumberDTO> getAllPhoneNumbers() {
+    public List<PhoneNumberWithCustomerDTO> getAllPhoneNumbers() {
         return phoneNumberRepository
             .findAll()
             .stream()
-            .map(phoneNumberMapper::phoneNumberToDTO)
+            .map(phoneNumberMapper::toPhoneNumberWithCustomerDTO)
             .toList();
     }
 
@@ -46,7 +47,7 @@ public class PhoneNumberService {
         return phoneNumberRepository
             .findByCustomerId(customerId)
             .stream()
-            .map(phoneNumberMapper::phoneNumberToDTO)
+            .map(phoneNumberMapper::toPhoneNumberDTO)
             .toList();
     }
 
@@ -62,7 +63,7 @@ public class PhoneNumberService {
         }
 
         final PhoneNumber updated = phoneNumberRepository.save(phoneNumber);
-        return phoneNumberMapper.phoneNumberToDTO(updated);
+        return phoneNumberMapper.toPhoneNumberDTO(updated);
     }
 
 }

@@ -1,6 +1,7 @@
 package au.com.belong.phone.book.controller;
 
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
+import au.com.belong.phone.book.model.dto.PhoneNumberWithCustomerDTO;
 import au.com.belong.phone.book.service.PhoneNumberService;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class PhoneNumberController {
     }
 
     @GetMapping("/phone-numbers")
-    public List<PhoneNumberDTO> getAllPhoneNumbers() {
+    public List<PhoneNumberWithCustomerDTO> getAllPhoneNumbers() {
         return phoneNumberService.getAllPhoneNumbers();
     }
 

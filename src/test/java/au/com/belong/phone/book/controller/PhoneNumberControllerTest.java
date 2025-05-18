@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import au.com.belong.phone.book.exception.handler.ResourceNotFoundException;
 import au.com.belong.phone.book.model.dto.CustomerDTO;
 import au.com.belong.phone.book.model.dto.PhoneNumberDTO;
+import au.com.belong.phone.book.model.dto.PhoneNumberWithCustomerDTO;
 import au.com.belong.phone.book.service.PhoneNumberService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
@@ -48,9 +49,10 @@ class PhoneNumberControllerTest {
     }
 
     @Test
-    void shouldReturnPhoneNumbersArray() throws Exception {
+    void shouldReturnPhoneNumbersWithCustomerDetailsArray() throws Exception {
         final CustomerDTO customerDTO = new CustomerDTO(1L, "Customer 1");
-        List<PhoneNumberDTO> phoneNumberDTOS = List.of(new PhoneNumberDTO(1L, "+61400123456", true, customerDTO));
+        List<PhoneNumberWithCustomerDTO> phoneNumberDTOS = List.of(
+            new PhoneNumberWithCustomerDTO(1L, "+61400123456", true, customerDTO));
         when(phoneNumberService.getAllPhoneNumbers()).thenReturn(phoneNumberDTOS);
 
         final String expectedJson = """
@@ -112,8 +114,7 @@ class PhoneNumberControllerTest {
 
     @Test
     void shouldReturnCustomerPhoneNumbersArray() throws Exception {
-        final CustomerDTO customerDTO = new CustomerDTO(1L, "Customer 1");
-        List<PhoneNumberDTO> phoneNumberDTOS = List.of(new PhoneNumberDTO(1L, "+61400123456", true, customerDTO));
+        List<PhoneNumberDTO> phoneNumberDTOS = List.of(new PhoneNumberDTO(1L, "+61400123456", true));
         when(phoneNumberService.getPhoneNumbersByCustomer(1L)).thenReturn(phoneNumberDTOS);
 
         final String expectedJson = """
@@ -121,11 +122,7 @@ class PhoneNumberControllerTest {
               {
                 "id": 1,
                 "phoneNumber": "+61400123456",
-                "isActivated": true,
-                "customer": {
-                  "id": 1,
-                  "customerName": "Customer 1"
-                }
+                "isActivated": true
               }
             ]
             """;
@@ -163,17 +160,13 @@ class PhoneNumberControllerTest {
 
     @Test
     void shouldReturnUpdatedCustomerPhoneNumber() throws Exception {
-        final PhoneNumberDTO phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", true, new CustomerDTO(1L, "Customer 1"));
+        final PhoneNumberDTO phoneNumberDTO = new PhoneNumberDTO(1L, "+61400123456", true);
         when(phoneNumberService.patchPhoneNumber(1L, 1L, phoneNumberDTO)).thenReturn(phoneNumberDTO);
         final String expectedJson = """
               {
                 "id": 1,
                 "phoneNumber": "+61400123456",
-                "isActivated": true,
-                "customer": {
-                  "id": 1,
-                  "customerName": "Customer 1"
-                }
+                "isActivated": true
               }
             """;
 
@@ -196,7 +189,7 @@ class PhoneNumberControllerTest {
             }
         """;
         final String errorMessage = "Phone Number not found with Customer ID: 1 and Phone Number ID: 2";
-        final PhoneNumberDTO phoneNumberDTO = new PhoneNumberDTO(1L, "", true, new CustomerDTO(2L, ""));
+        final PhoneNumberDTO phoneNumberDTO = new PhoneNumberDTO(1L, "", true);
         when(phoneNumberService.patchPhoneNumber(1L, 2L, phoneNumberDTO))
             .thenThrow(new ResourceNotFoundException(errorMessage));
 
@@ -217,11 +210,7 @@ class PhoneNumberControllerTest {
               {
                 "id": 1,
                 "phoneNumber": "+61400123456",
-                "isActivated": "ABCD",
-                "customer": {
-                  "id": 1,
-                  "customerName": "Customer 1"
-                }
+                "isActivated": "ABCD"
               }
             """;
         final String expectedJson = """
