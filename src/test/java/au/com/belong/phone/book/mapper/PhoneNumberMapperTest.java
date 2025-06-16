@@ -63,5 +63,11 @@ class PhoneNumberMapperTest {
         assertNull(phoneNumberWithCustomerDTO.customerDTO());
     }
 
+    @Test
+    void shouldReturnNullPhoneNumberWithCustomerDTO() {
+        phoneNumberWithCustomerDTO = mapper.toPhoneNumberWithCustomerDTO(null);
+        assertNull(phoneNumberWithCustomerDTO);
+    }
+
 
 }
