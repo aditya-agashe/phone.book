@@ -171,7 +171,8 @@
 				<configuration>
 					<excludes>
 						<exclude>au/com/belong/phone/book/Application.class</exclude>
-						<exclude>au/com/belong/phone/book/model/entity/**</exclude>
+						<exclude>au/com/belong/phone/book/model/entity/Customer.class</exclude>
+						<exclude>au/com/belong/phone/book/model/entity/PhoneNumber.class</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
